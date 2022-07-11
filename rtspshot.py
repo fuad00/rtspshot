@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 
+from doctest import Example
 import av
 import re
 import os
 import sys
 import datetime
+import argparse
 
+def file_exists(path):
+    if os.path.exists(path):
+        return path
 
 def escape_chars(s: str):
 	return re.sub(r"[^\w\-_. ]", "_", s)
@@ -62,31 +67,33 @@ def get_screenshot(rtsp_url: str, folder, tries=2):
 		return
 	
 def main():
-	if (len(sys.argv) < 2) or ("-f" not in sys.argv) or ("-h" in sys.argv):
-		print("""RTSPshot - v0.0.1
+	args = parse_arguments()
+	print(args)
+# 	print("""RTSPshot - v0.0.1
 
-GENERAL OPTIONS:
-  -f              List of rtsp cams to screenshot (required)
-  -h              Show this help
-	""")
-	else:
-		for w in range(len(sys.argv)):
-			if sys.argv[w] == "-f":
-				if sys.argv[w] != sys.argv[-1]:
-					if len(sys.argv[w+1]) > 0:
-						try:
-							now = datetime.datetime.now()
-							fold = now.strftime('%Y-%m-%d__%H-%M-%S')
-							os.system(f"mkdir {fold}")
-							with open(sys.argv[w+1]) as file:
-								for line in file:
-									get_screenshot(line.rstrip(), folder=fold)
-						except Exception as e:
-							print(e)
-				else:
-					print("No list specified. See -h")
-			else:
-				pass
-main()
+# GENERAL OPTIONS:
+#   -f              List of rtsp cams to screenshot (required)
+#   -h              Show this help
+# """)
 
 
+
+# 	now = datetime.datetime.now()
+# 	fold = now.strftime('%Y-%m-%d__%H-%M-%S')
+# 	os.system(f"mkdir {fold}")
+# 	with open("example.txt") as file:
+# 		for line in file:
+# 			get_screenshot(line.rstrip(), folder=fold)
+
+
+def parse_arguments():
+	parser = argparse.ArgumentParser(description="RTSPshot v1.0.0")
+
+	parser.add_argument("-f", "--file", help="File with rtsp urls", type=file_exists, required=True)
+	#TODO: parser.add_argument("-o", "--output", help="Output folder (creates folader with today's date by default)", type=file_exists, required=False)
+
+	return parser.parse_args()
+
+
+if __name__ == "__main__":
+    main()
