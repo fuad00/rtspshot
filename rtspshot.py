@@ -72,9 +72,15 @@ def get_screenshot(rtsp_url: str, folder, tries=2):
 
 
 def parse_arguments():
-	parser = argparse.ArgumentParser(description=f"{config.title} {config.version}")
+	parser = argparse.ArgumentParser(description=f"{config.big_title}",
+		usage=f'{config.title}.py [-h] file',
+		formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument("file", help="File with rtsp urls", type=file_exists)
-	parser.add_argument("-o", dest="fold", metavar="output_folder",help="Output folder (Default: today's date)", type=str, required=False)
+
+	parser.add_argument("-t", "--threads", dest="threads", metavar='', help="screenshoting threads (default: 50)", default=50, type=int, required=False)
+	parser.add_argument("-o", "--output", dest="fold", metavar='', help="output folder (default: today's date)", type=str, required=False)
+
+	parser.add_argument('-v ', '--version', action='version', version=f"{config.title} {config.version}")
 
 	return parser.parse_args()
 

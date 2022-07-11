@@ -1,2 +1,1 @@
 rtsp://example:passwd@123.12.23.33:554/
-rtsp://222.222.222.222:8554/live.sdp
