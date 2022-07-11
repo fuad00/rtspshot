@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from doctest import Example
+from config import config
 import av
 import re
 import os
@@ -9,8 +9,11 @@ import datetime
 import argparse
 
 def file_exists(path):
-    if os.path.exists(path):
-        return path
+	if os.path.exists(path):
+		return path
+	else:
+		print(f"{path} not found")
+		sys.exit()
 
 def escape_chars(s: str):
 	return re.sub(r"[^\w\-_. ]", "_", s)
@@ -66,34 +69,28 @@ def get_screenshot(rtsp_url: str, folder, tries=2):
 		print(f"[!] Fatal on {rtsp_url} :    #{repr(e)}")
 		return
 	
-def main():
-	args = parse_arguments()
-	print(args)
-# 	print("""RTSPshot - v0.0.1
-
-# GENERAL OPTIONS:
-#   -f              List of rtsp cams to screenshot (required)
-#   -h              Show this help
-# """)
-
-
-
-# 	now = datetime.datetime.now()
-# 	fold = now.strftime('%Y-%m-%d__%H-%M-%S')
-# 	os.system(f"mkdir {fold}")
-# 	with open("example.txt") as file:
-# 		for line in file:
-# 			get_screenshot(line.rstrip(), folder=fold)
 
 
 def parse_arguments():
-	parser = argparse.ArgumentParser(description="RTSPshot v1.0.0")
-
-	parser.add_argument("-f", "--file", help="File with rtsp urls", type=file_exists, required=True)
-	#TODO: parser.add_argument("-o", "--output", help="Output folder (creates folader with today's date by default)", type=file_exists, required=False)
+	parser = argparse.ArgumentParser(description=f"{config.title} {config.version}")
+	parser.add_argument("file", help="File with rtsp urls", type=file_exists)
+	parser.add_argument("-o", dest="fold", metavar="output_folder",help="Output folder (Default: today's date)", type=str, required=False)
 
 	return parser.parse_args()
 
+def main():
+	args = parse_arguments()
+	print(args)
+	if args.fold:
+		fold = args.fold
+	else:
+		now = datetime.datetime.now()
+		fold = now.strftime('%Y-%m-%d__%H-%M-%S')
+
+	os.system(f"mkdir {fold}")
+	with open(args.file) as file:
+		for line in file:
+			get_screenshot(line.rstrip(), folder=fold)
 
 if __name__ == "__main__":
     main()
