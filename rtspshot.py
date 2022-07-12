@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from tqdm import tqdm
+import concurrent.futures
 from config import config
 import av
 import re
@@ -45,28 +47,27 @@ def get_screenshot(rtsp_url: str, folder, tries=2):
 				for frame in container.decode(video=0):
 					frame.to_image().save(file_path)
 					break
-				print(f"[+] Captured screenshot for {rtsp_url}")
-				return file_path
+				#print(f"[+] Captured screenshot for {rtsp_url}")
+				#return file_path
+				return 1
 			else:
 				if tries < 2:
 					container.close()
 					tries += 1
 					return get_screenshot(rtsp_url, tries)
 				else:
-					print(f"[-] Broken video stream or unknown issues with {rtsp_url}")
+					#print(f"[-] Broken video stream or unknown issues with {rtsp_url}")
 					return
 	except (MemoryError, PermissionError, av.InvalidDataError) as e:
-		print(f"[-] Missed screenshot of {rtsp_url}: {repr(e)}")
+		#print(f"[-] Missed screenshot of {rtsp_url}: {repr(e)}")
 		if tries < 2:
 			tries += 1
 			return get_screenshot(rtsp_url, tries)
 		else:
-			print(
-				f"[-] Missed screenshot {rtsp_url}",
-			)
+			#print(f"[-] Missed screenshot {rtsp_url}",)
 			return
 	except Exception as e:
-		print(f"[!] Fatal on {rtsp_url} :    #{repr(e)}")
+		#print(f"[!] Fatal on {rtsp_url} :    #{repr(e)}")
 		return
 	
 
@@ -77,7 +78,7 @@ def parse_arguments():
 		formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument("file", help="File with rtsp urls", type=file_exists)
 
-	parser.add_argument("-t", "--threads", dest="threads", metavar='', help="screenshoting threads (default: 50)", default=50, type=int, required=False)
+	parser.add_argument("-t", "--threads", dest="threads", metavar='', help="screenshoting threads (default: 10)", default=10, type=int, required=False)
 	parser.add_argument("-o", "--output", dest="fold", metavar='', help="output folder (default: today's date)", type=str, required=False)
 
 	parser.add_argument('-v ', '--version', action='version', version=f"{config.title} {config.version}")
@@ -85,8 +86,9 @@ def parse_arguments():
 	return parser.parse_args()
 
 def main():
+
 	args = parse_arguments()
-	print(args)
+
 	if args.fold:
 		fold = args.fold
 	else:
@@ -95,8 +97,14 @@ def main():
 
 	os.system(f"mkdir {fold}")
 	with open(args.file) as file:
-		for line in file:
-			get_screenshot(line.rstrip(), folder=fold)
+
+		with concurrent.futures.ThreadPoolExecutor() as executor:
+			for line in file:
+				future = executor.submit(get_screenshot, line.rstrip(), fold)
+				return_value = future.result()
+				print(return_value)
+
+
 
 if __name__ == "__main__":
     main()
