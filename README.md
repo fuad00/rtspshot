@@ -9,6 +9,7 @@ pip3 install -U pip
 git clone https://github.com/fuad00/rtspshot
 cd rtspshot
 pip3 install -r requirements.txt
+
 ```
 
 ## TODO: Better README.md; Multithreading support; Upload to PyPI
